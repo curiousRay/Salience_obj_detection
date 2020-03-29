@@ -12,6 +12,8 @@
 import cv2
 import numpy as np
 import pySaliencyMapDefs
+import bbox
+
 
 class pySaliencyMap:
     # initialization
@@ -280,5 +282,19 @@ class pySaliencyMap:
         cv2.grabCut(img, mask=mask, rect=rect, bgdModel=bgdmodel, fgdModel=fgdmodel, iterCount=iterCount, mode=cv2.GC_INIT_WITH_MASK)
         # post-processing
         mask_out = np.where((mask==cv2.GC_FGD) + (mask==cv2.GC_PR_FGD), 255, 0).astype('uint8')
-        output = cv2.bitwise_and(img,img,mask=mask_out)
+
+        # plt.imshow(mask_out)
+        # plt.show()
+
+        # 测试显示显著区域mask_out
+        # source_window = 'Source'
+        # cv2.namedWindow(source_window)
+        # cv2.imshow(source_window, mask_out)
+
+        # 用方框进行标记
+        bbox_info = bbox.bbox_rect(100, mask_out)
+
+        output = cv2.bitwise_and(img, img, mask=mask_out)
         return output
+
+

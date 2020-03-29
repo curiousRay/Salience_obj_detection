@@ -1,12 +1,6 @@
 # -------------------------------------------------------------------------------
 # Name:        main
 # Purpose:     Testing the package pySaliencyMap
-#
-# Author:      Akisato Kimura <akisato@ieee.org>
-#
-# Created:     May 4, 2014
-# Copyright:   (c) Akisato Kimura 2014-
-# Licence:     All rights reserved
 # -------------------------------------------------------------------------------
 
 import cv2
@@ -16,7 +10,7 @@ import pySaliencyMap
 # main
 if __name__ == '__main__':
     # read
-    img = cv2.imread('test2.png')
+    img = cv2.imread('test3.jpg')
 
     # initialize
     imgsize = img.shape
