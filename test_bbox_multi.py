@@ -3,8 +3,7 @@
 @author: Lihao Lei
 @license: GPL-3.0
 @contact: leilei199708@gmail.com
-@file: test_bbox.py
-@time: 2020/3/17
+@file: test_bbox_multi.py
 @desc: 使用annotations对测试集进行标注
 """
 

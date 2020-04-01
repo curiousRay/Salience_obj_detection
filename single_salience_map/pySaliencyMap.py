@@ -12,6 +12,8 @@
 import cv2
 import numpy as np
 import pySaliencyMapDefs
+import random as rng
+import matplotlib.pyplot as plt
 import bbox
 
 
@@ -256,6 +258,7 @@ class pySaliencyMap:
         normalizedSM2 = normalizedSM.astype(np.float32)
         smoothedSM = cv2.bilateralFilter(normalizedSM2, 7, 3, 1.55)
         self.SM = cv2.resize(smoothedSM, (width,height), interpolation=cv2.INTER_NEAREST)
+
         # return
         return self.SM
 
@@ -292,9 +295,7 @@ class pySaliencyMap:
         # cv2.imshow(source_window, mask_out)
 
         # 用方框进行标记
-        bbox_info = bbox.bbox_rect(100, mask_out)
+        # bbox_info = bbox.bbox_rect(255, mask_out)
 
         output = cv2.bitwise_and(img, img, mask=mask_out)
         return output
-
-

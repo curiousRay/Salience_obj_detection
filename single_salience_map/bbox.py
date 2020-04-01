@@ -4,7 +4,6 @@
 @license: GPL-3.0
 @contact: leilei199708@gmail.com
 @file: bbox.py
-@time: 2020/3/29
 @desc: get bounding box info from saliency region
 """
 import random as rng
@@ -30,14 +29,16 @@ def bbox_rect(val, img):
         boundRect[i] = cv2.boundingRect(contours_poly[i])
         centers[i], radius[i] = cv2.minEnclosingCircle(contours_poly[i])
 
-    drawing = np.zeros((canny_output.shape[0], canny_output.shape[1], 3), dtype=np.uint8)
+    # black background
+    # drawing = np.zeros((canny_output.shape[0], canny_output.shape[1], 3), dtype=np.uint8)
+    drawing = img
     # Draw polygonal contour + bonding rects + circles
     for i in range(len(contours)):
         color = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
         cv2.drawContours(drawing, contours_poly, i, color)
         cv2.rectangle(drawing, (int(boundRect[i][0]), int(boundRect[i][1])), \
                       (int(boundRect[i][0] + boundRect[i][2]), int(boundRect[i][1] + boundRect[i][3])), color, 2)
-        cv2.circle(drawing, (int(centers[i][0]), int(centers[i][1])), int(radius[i]), color, 2)
+        # cv2.circle(drawing, (int(centers[i][0]), int(centers[i][1])), int(radius[i]), color, 2)
 
     # Show in a window
     cv2.imshow('Contours', drawing)

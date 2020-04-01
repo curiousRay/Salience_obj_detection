@@ -3,7 +3,7 @@
 @author: Lihao Lei
 @license: GPL-3.0
 @contact: leilei199708@gmail.com
-@file: train.py
-@desc: Main training entrance.
+@file: load_truth_value.py
+@desc: load truth value from UAV123 dataset
 """
 

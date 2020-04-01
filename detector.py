@@ -7,7 +7,9 @@
 @time: 2020/3/25
 @desc: create bounding box for salience region
 """
+import args as args
 import cv2
+import numpy as np
 
 image = cv2.imread('./single_salience_map/test2.png')
 
