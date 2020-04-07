@@ -8,7 +8,6 @@
 """
 import random as rng
 import cv2
-import numpy as np
 
 
 def bbox_rect(val, img):
@@ -41,5 +40,5 @@ def bbox_rect(val, img):
         # cv2.circle(drawing, (int(centers[i][0]), int(centers[i][1])), int(radius[i]), color, 2)
 
     # Show in a window
-    cv2.imshow('Contours', drawing)
+    # cv2.imshow('Contours', drawing)
     return boundRect

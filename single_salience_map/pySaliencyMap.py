@@ -12,10 +12,6 @@
 import cv2
 import numpy as np
 import pySaliencyMapDefs
-import random as rng
-import matplotlib.pyplot as plt
-import bbox
-
 
 class pySaliencyMap:
     # initialization
