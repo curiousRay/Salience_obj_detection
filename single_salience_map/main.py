@@ -1,24 +1,21 @@
-# -------------------------------------------------------------------------------
-# Name:        main
-# Purpose:     Testing the package pySaliencyMap
-#
-# Author:      Akisato Kimura <akisato@ieee.org>
-#
-# Created:     April 24, 2014
-# Copyright:   (c) Akisato Kimura 2014-
-# Licence:     All rights reserved
-# -------------------------------------------------------------------------------
+# -*- coding:utf-8 -*-
+"""
+@author: Lihao Lei
+@license: GPL-3.0
+@contact: leilei199708@gmail.com
+@file: bbox.py
+@desc: main single object detection entrance
+"""
 
+import os
 import cv2
-import matplotlib.pyplot as plt
 import pySaliencyMap
 import numpy as np
 import pickle
-import glob
 import bbox
 from imutils import paths
-import os
 from multiprocessing import Pool
+import time
 
 
 def process_images(payload):
@@ -30,11 +27,15 @@ def process_images(payload):
         # images = [cv2.imread(file) for file in glob.glob("../dataset/UAV123_10fps/data_seq/UAV123_10fps/bike1/*.jpg")]
         image = cv2.imread(image_path)
         # here influences structure of the output binary file
-        h = dhash(image)
-        h = convert_hash(h)
+
         l = hashes.get(image_path, [])
-        l.append(h)
+        sm = pySaliencyMap.pySaliencyMap(image.shape[1], image.shape[0])  # img_width, img_height
+        saliency_map = sm.SMGetSM(image)
+        res = bbox.bbox_rect(100, np.uint8(255 * saliency_map))
+        l.append(res)
         hashes[image_path] = l
+        # print(int(time.time()))
+
     f = open(payload["output_path"], "wb")
     f.write(pickle.dumps(hashes))
     f.close()
@@ -45,25 +46,6 @@ def process_images(payload):
     #     saliency_map = sm.SMGetSM(img)
     #
     #     print(bbox.bbox_rect(100, np.uint8(255 * saliency_map)))
-
-
-def dhash(image, hashSize=8):
-    # convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # resize the input image, adding a single column (width) so we
-    # can compute the horizontal gradient
-    resized = cv2.resize(gray, (hashSize + 1, hashSize))
-    # compute the (relative) horizontal gradient between adjacent
-    # column pixels
-    diff = resized[:, 1:] > resized[:, :-1]
-    # convert the difference image to a hash
-    return sum([2 ** i for (i, v) in enumerate(diff.flatten()) if v])
-
-
-def convert_hash(h):
-    # convert the hash to NumPy's 64-bit float and then back to
-    # Python's built in int
-    return int(np.array(h, dtype="float64"))
 
 
 def chunk(list, n):
@@ -79,13 +61,14 @@ def gen_paths(num):
 
 # main
 if __name__ == '__main__':
-    PROCESS_NUM = 2  # number of processes to be created
+    PROCESS_NUM = -1  # number of processes to be created
     IMG_DIR = "../dataset/UAV123_10fps/data_seq/UAV123_10fps/bike1/"
 
+    IMG_NUM = len([lists for lists in os.listdir(IMG_DIR)])
     procs = PROCESS_NUM if PROCESS_NUM > 0 else os.cpu_count()
-    img_num_per_proc = int(np.ceil(1029 / float(procs)))
+    img_num_per_proc = int(np.ceil(IMG_NUM / float(procs)))
 
-    chunked_paths = list(chunk(gen_paths(1029), img_num_per_proc))
+    chunked_paths = list(chunk(gen_paths(IMG_NUM), img_num_per_proc))
     # print(chunked_paths[0])
 
     payloads = []
@@ -123,8 +106,8 @@ if __name__ == '__main__':
             imagePaths.extend(tempPaths)
             hashes[tempPaths] = tempH
     # serialize the hashes dictionary to disk
-    # print(hashes)
     print("[INFO] serializing hashes...")
+    print(hashes)
     f = open("temp/bboxes.pickle", "wb")
     f.write(pickle.dumps(hashes))
     f.close()

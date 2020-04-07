@@ -7,6 +7,7 @@
 @desc:
 """
 import numpy as np
+import single_salience_map.pySaliencyMap as pySaliencyMap
 from PIL import Image, ImageDraw
 
 class_tag = "bike1"
