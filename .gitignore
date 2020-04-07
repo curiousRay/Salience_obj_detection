@@ -10,7 +10,6 @@ __pycache__/
 
 # dataset files
 dataset/
-single_salience_map/temp/
 
 # Distribution / packaging
 .Python
