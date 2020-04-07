@@ -10,6 +10,7 @@ __pycache__/
 
 # dataset files
 dataset/
+single_salience_map/temp/
 
 # Distribution / packaging
 .Python
@@ -24,7 +25,6 @@ lib/
 lib64/
 parts/
 sdist/
-temp/
 
 var/
 *.egg-info/
