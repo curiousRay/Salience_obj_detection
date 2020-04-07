@@ -10,6 +10,7 @@ __pycache__/
 
 # dataset files
 dataset/
+*.pickle
 
 # Distribution / packaging
 .Python
