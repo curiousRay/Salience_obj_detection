@@ -39,6 +39,13 @@ def bbox_rect(val, img):
                       (int(boundRect[i][0] + boundRect[i][2]), int(boundRect[i][1] + boundRect[i][3])), color, 2)
         # cv2.circle(drawing, (int(centers[i][0]), int(centers[i][1])), int(radius[i]), color, 2)
 
-    # Show in a window
+    # Show in a window, IMPORTANT TEST SWITCH
     # cv2.imshow('Contours', drawing)
+    cv2.waitKey()  # 防止窗口闪退
     return boundRect
+
+
+def bbox_judge(raw, truth):
+    # print(truth)
+    # print(raw)
+    return raw

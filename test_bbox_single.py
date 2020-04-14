@@ -21,7 +21,7 @@ with open(annotations_dir + class_tag + '.txt', 'r') as f:
     lines = f.readlines()
 
     boxes = []
-    for idx in range(len(lines)):  # 遍历该图中所有对象标记
+    for idx in range(len(lines)):  # 遍历该文件夹下所有anno文件
         box = np.zeros((len(lines), 5), dtype=np.uint16)
         line = lines[idx].split(',')  # [x,y,w,h,score,object_category,truncation,occlusion]
         x1 = int(line[0]) - 1  # Make pixel indexes 0-based

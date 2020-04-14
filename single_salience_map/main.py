@@ -10,17 +10,19 @@
 import os
 import cv2
 import pySaliencyMap
+import pySaliencyMapDefs as defs
 import numpy as np
 import pickle
-import bbox
+from single_salience_map import load_truth, bbox
 from imutils import paths
 from multiprocessing import Pool
+import matplotlib.pyplot as plt
 import time
 
 
 def process_images(payload):
     print("[INFO] starting process {}".format(payload["id"]))
-    hashes = {}
+    bboxes = {}
 
     for image_path in payload["input_paths"]:
         # read, cost 14 secs time
@@ -28,24 +30,24 @@ def process_images(payload):
         image = cv2.imread(image_path)
         # here influences structure of the output binary file
 
-        l = hashes.get(image_path, [])
+        l = bboxes.get(image_path, [])
         sm = pySaliencyMap.pySaliencyMap(image.shape[1], image.shape[0])  # img_width, img_height
-        saliency_map = sm.SMGetSM(image)
-        res = bbox.bbox_rect(100, np.uint8(255 * saliency_map))
+        saliency_map = sm.SMGetSM(image)  # computation
+
+        # plt.subplot(2, 2, 2), plt.imshow(saliency_map, 'gray')
+        # plt.show()
+
+        res = bbox.bbox_rect(100, np.uint8(255 * saliency_map))  # get bboxes
+        # val = load_truth()
+        # res = bbox.bbox_judge(res, load_truth())  # remove unnecessary bboxes of each image
+        # print(res)
         l.append(res)
-        hashes[image_path] = l
+        bboxes[image_path] = l
         # print(int(time.time()))
 
     f = open(payload["output_path"], "wb")
-    f.write(pickle.dumps(hashes))
+    f.write(pickle.dumps(bboxes))
     f.close()
-    # for img in images:
-    #     # initialize
-    #     sm = pySaliencyMap.pySaliencyMap(img.shape[1], img.shape[0])  # img_width, img_height
-    #     # computation
-    #     saliency_map = sm.SMGetSM(img)
-    #
-    #     print(bbox.bbox_rect(100, np.uint8(255 * saliency_map)))
 
 
 def chunk(list, n):
@@ -56,18 +58,12 @@ def chunk(list, n):
 
 
 def gen_paths(num):
-    return ["%s%06d%s" % (IMG_DIR, x, ".jpg") for x in range(1, num + 1)]
+    return ["%s%06d%s" % (defs.IMG_DIR, x, ".jpg") for x in range(1, num + 1)]
 
 
-# main
-if __name__ == '__main__':
-    PROCESS_NUM = -1  # number of processes to be created
-    IMG_DIR = "../dataset/UAV123_10fps/data_seq/UAV123_10fps/bike1/"
-
-    IMG_NUM = len([lists for lists in os.listdir(IMG_DIR)])
+def gen_bboxes():
     procs = PROCESS_NUM if PROCESS_NUM > 0 else os.cpu_count()
     img_num_per_proc = int(np.ceil(IMG_NUM / float(procs)))
-
     chunked_paths = list(chunk(gen_paths(IMG_NUM), img_num_per_proc))
     # print(chunked_paths[0])
 
@@ -92,7 +88,7 @@ if __name__ == '__main__':
     print("[INFO] multiprocessing complete")
 
     # fetch multi-processed data and combine them
-    hashes = {}
+    bboxes = {}
     # loop over all pickle files in the output directory
     for p in paths.list_files("temp", validExts=".pickle", ):
         # load the contents of the dictionary
@@ -102,14 +98,26 @@ if __name__ == '__main__':
             # grab all image paths with the current hash, add in the
             # image paths for the current pickle file, and then
             # update our hashes dictionary
-            imagePaths = hashes.get(tempPaths, [])
+            imagePaths = bboxes.get(tempPaths, [])
             imagePaths.extend(tempPaths)
-            hashes[tempPaths] = tempH
+            bboxes[tempPaths] = tempH
     # serialize the hashes dictionary to disk
     print("[INFO] serializing hashes...")
-    print(hashes)
+    # print(bboxes)
     f = open("temp/bboxes.pickle", "wb")
-    f.write(pickle.dumps(hashes))
+    f.write(pickle.dumps(bboxes))
     f.close()
+
+    return bboxes
+
+
+# main
+if __name__ == '__main__':
+    PROCESS_NUM = 1  # number of processes to be created, use -1 to deploy all cores
+    IMG_NUM = len([lists for lists in os.listdir(defs.IMG_DIR)])
+
+    bboxes = gen_bboxes()
+    truth = load_truth.load(bboxes)
+
     #    cv2.waitKey(0)
     cv2.destroyAllWindows()

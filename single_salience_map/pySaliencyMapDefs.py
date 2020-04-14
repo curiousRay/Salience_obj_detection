@@ -9,6 +9,10 @@
 # Licence:     All rights reserved
 #-------------------------------------------------------------------------------
 
+# data sources
+ANNO_FILE = "../dataset/UAV123_10fps/anno/UAV123_10fps/bike1.txt"
+IMG_DIR = "../dataset/UAV123_10fps/data_seq/UAV123_10fps/bike1/"
+
 # parameters for computing optical flows using the Gunner Farneback's algorithm
 farne_pyr_scale = 0.5
 farne_levels = 3
