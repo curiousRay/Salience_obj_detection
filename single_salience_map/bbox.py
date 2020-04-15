@@ -46,6 +46,6 @@ def bbox_rect(val, img):
 
 
 def bbox_judge(raw, truth):
-    # print(truth)
-    # print(raw)
+    print(truth)
+    print(raw)
     return raw

@@ -100,7 +100,7 @@ def gen_bboxes():
             # update our hashes dictionary
             imagePaths = bboxes.get(tempPaths, [])
             imagePaths.extend(tempPaths)
-            bboxes[tempPaths] = tempH
+            bboxes[tempPaths] = tempH[0]
     # serialize the hashes dictionary to disk
     print("[INFO] serializing hashes...")
     # print(bboxes)
@@ -117,7 +117,8 @@ if __name__ == '__main__':
     IMG_NUM = len([lists for lists in os.listdir(defs.IMG_DIR)])
 
     bboxes = gen_bboxes()
-    truth = load_truth.load(bboxes)
+    truths = load_truth.load(bboxes)
 
+    bbox.bbox_judge(list(bboxes.values()), truths)
     #    cv2.waitKey(0)
     cv2.destroyAllWindows()
