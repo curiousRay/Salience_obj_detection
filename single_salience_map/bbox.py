@@ -39,13 +39,56 @@ def bbox_rect(val, img):
                       (int(boundRect[i][0] + boundRect[i][2]), int(boundRect[i][1] + boundRect[i][3])), color, 2)
         # cv2.circle(drawing, (int(centers[i][0]), int(centers[i][1])), int(radius[i]), color, 2)
 
-    # Show in a window, IMPORTANT TEST SWITCH
+    # TODO: Show in a window, IMPORTANT TEST SWITCH
     # cv2.imshow('Contours', drawing)
-    cv2.waitKey()  # 防止窗口闪退
+
+    cv2.waitKey()  # forbid unexpected window quit
+    # print(boundRect)
     return boundRect
 
 
-def bbox_judge(raw, truth):
-    print(truth)
-    print(raw)
-    return raw
+def bbox_iou(boxes, truth):
+    """
+    computing IoU of single image
+    boxes: (x0, y0, w, h) -> (y0, x0, y1, x1)
+    truth: (x0, y0, x1, y1) -> (y0, x0, y1, x1)
+    :return: scala value of IoU
+    """
+    # print(boxes)
+    # print(truth)
+    res = []
+    rec2 = [truth[1], truth[0], truth[3], truth[2]]
+    S_rec2 = (rec2[3] - rec2[1]) * (rec2[2] - rec2[0])
+
+    for box in boxes:
+        rec1 = [box[1], box[0], box[1] + box[3], box[0] + box[2]]
+        # computing area of each rectangles
+        S_rec1 = (rec1[2] - rec1[0]) * (rec1[3] - rec1[1])
+
+        # find the each edge of intersect rectangle
+        left_line = max(rec1[1], rec2[1])
+        right_line = min(rec1[3], rec2[3])
+        top_line = max(rec1[0], rec2[0])
+        bottom_line = min(rec1[2], rec2[2])
+
+        # # judge if there is an intersect
+        if left_line >= right_line or top_line >= bottom_line:
+            # res.append(0)
+            continue
+        else:
+            intersect = (right_line - left_line) * (bottom_line - top_line)
+            res.append((intersect / (S_rec1 + S_rec2 - intersect)))
+    res = max(list(set(res)))  # delete dumplication and get max IOU
+    print(res)
+
+    return res
+
+
+def bbox_judge(raw, truths):
+    # print(raw)
+    # print(truths)
+    iou = []
+    for i in range(len(truths)):
+        # print(raw[i])
+        iou.append(bbox_iou(raw[i], truths[i]))
+    return iou

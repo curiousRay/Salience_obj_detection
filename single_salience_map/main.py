@@ -34,12 +34,11 @@ def process_images(payload):
         sm = pySaliencyMap.pySaliencyMap(image.shape[1], image.shape[0])  # img_width, img_height
         saliency_map = sm.SMGetSM(image)  # computation
 
+        # TODO: show graph, IMPORTANT TEST SWITCH
         # plt.subplot(2, 2, 2), plt.imshow(saliency_map, 'gray')
         # plt.show()
 
         res = bbox.bbox_rect(100, np.uint8(255 * saliency_map))  # get bboxes
-        # val = load_truth()
-        # res = bbox.bbox_judge(res, load_truth())  # remove unnecessary bboxes of each image
         # print(res)
         l.append(res)
         bboxes[image_path] = l
@@ -106,6 +105,7 @@ def gen_bboxes():
     # print(bboxes)
     f = open("temp/bboxes.pickle", "wb")
     f.write(pickle.dumps(bboxes))
+    # print(bboxes)
     f.close()
 
     return bboxes
@@ -119,6 +119,7 @@ if __name__ == '__main__':
     bboxes = gen_bboxes()
     truths = load_truth.load(bboxes)
 
-    bbox.bbox_judge(list(bboxes.values()), truths)
+    res = bbox.bbox_judge(list(bboxes.values()), truths)  # bbox.values() is a object
+    # print(res)
     #    cv2.waitKey(0)
     cv2.destroyAllWindows()
