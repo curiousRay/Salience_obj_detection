@@ -16,6 +16,8 @@ import pickle
 from single_salience_map import load_truth, bbox
 from imutils import paths
 from multiprocessing import Pool
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.datasets import make_regression
 import matplotlib.pyplot as plt
 import time
 
@@ -32,10 +34,21 @@ def process_images(payload):
 
         l = bboxes.get(image_path, [])
         sm = pySaliencyMap.pySaliencyMap(image.shape[1], image.shape[0])  # img_width, img_height
-        saliency_map = sm.SMGetSM(image)  # computation
+        saliency_map = sm.SMGetSM(image, [0.3, 0.3, 0.2, 0.2])  # computation
 
         # TODO: show graph, IMPORTANT TEST SWITCH
+        # weights = [1, 0, 0, 0]
+        # saliency_map = sm.SMGetSM(image, weights)
+        # plt.subplot(2, 2, 1), plt.imshow(saliency_map, 'gray')
+        # weights = [0, 1, 0, 0]
+        # saliency_map = sm.SMGetSM(image, weights)
         # plt.subplot(2, 2, 2), plt.imshow(saliency_map, 'gray')
+        # weights = [0, 0, 1, 0]
+        # saliency_map = sm.SMGetSM(image, weights)
+        # plt.subplot(2, 2, 3), plt.imshow(saliency_map, 'gray')
+        # weights = [0, 0, 0, 1]
+        # saliency_map = sm.SMGetSM(image, weights)
+        # plt.subplot(2, 2, 4), plt.imshow(saliency_map, 'gray')
         # plt.show()
 
         res = bbox.bbox_rect(100, np.uint8(255 * saliency_map))  # get bboxes
@@ -116,10 +129,18 @@ if __name__ == '__main__':
     PROCESS_NUM = 1  # number of processes to be created, use -1 to deploy all cores
     IMG_NUM = len([lists for lists in os.listdir(defs.IMG_DIR)])
 
+    # begin regressor loop
     bboxes = gen_bboxes()
     truths = load_truth.load(bboxes)
+    print(truths)
+    res = bbox.bbox_judge(list(bboxes.values()), truths)  # bbox.values() is an object
+    print(res)
 
-    res = bbox.bbox_judge(list(bboxes.values()), truths)  # bbox.values() is a object
-    # print(res)
-    #    cv2.waitKey(0)
+    # print([x[0] for x in res])
+
+    X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
+    regr = AdaBoostRegressor(random_state=0, n_estimators=100)
+
+    # cv2.waitKey(0)
+    # end regressor loop
     cv2.destroyAllWindows()

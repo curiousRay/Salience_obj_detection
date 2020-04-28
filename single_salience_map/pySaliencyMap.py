@@ -229,7 +229,7 @@ class pySaliencyMap:
         return self.CCMGetCM(MFM_X, MFM_Y)
 
     # core
-    def SMGetSM(self, src):
+    def SMGetSM(self, src, weights):
         # definitions
         size = src.shape
         width = size[1]
@@ -250,17 +250,20 @@ class pySaliencyMap:
         OCM = self.OCMGetCM(OFM)
         MCM = self.MCMGetCM(MFM_X, MFM_Y)
         # adding all the conspicuity maps to form a saliency map
-        wi = pySaliencyMapDefs.weight_intensity
-        wc = pySaliencyMapDefs.weight_color
-        wo = pySaliencyMapDefs.weight_orientation
-        wm = pySaliencyMapDefs.weight_motion
+        # wi = pySaliencyMapDefs.weight_intensity
+        # wc = pySaliencyMapDefs.weight_color
+        # wo = pySaliencyMapDefs.weight_orientation
+        # wm = pySaliencyMapDefs.weight_motion
+        wi = weights[0]
+        wc = weights[1]
+        wo = weights[2]
+        wm = weights[3]
         SMMat = wi * ICM + wc * CCM + wo * OCM + wm * MCM
         # normalize
         normalizedSM = self.SMRangeNormalize(SMMat)
         normalizedSM2 = normalizedSM.astype(np.float32)
         smoothedSM = cv2.bilateralFilter(normalizedSM2, 7, 3, 1.55)
         self.SM = cv2.resize(smoothedSM, (width, height), interpolation=cv2.INTER_NEAREST)
-
         # return
         return self.SM
 

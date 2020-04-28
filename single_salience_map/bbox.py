@@ -73,22 +73,24 @@ def bbox_iou(boxes, truth):
 
         # # judge if there is an intersect
         if left_line >= right_line or top_line >= bottom_line:
-            # res.append(0)
+            res.append(0)
             continue
         else:
             intersect = (right_line - left_line) * (bottom_line - top_line)
             res.append((intersect / (S_rec1 + S_rec2 - intersect)))
-    res = max(list(set(res)))  # delete dumplication and get max IOU
-    print(res)
 
-    return res
+    iou = max(list(set(res)))  # delete dumplication and get max IOU
+    best_box = boxes[res.index(iou)]  # filter the best box
+    # print(best_box, iou)
+
+    return best_box, iou
 
 
 def bbox_judge(raw, truths):
     # print(raw)
     # print(truths)
-    iou = []
+    res = []
     for i in range(len(truths)):
         # print(raw[i])
-        iou.append(bbox_iou(raw[i], truths[i]))
-    return iou
+        res.append(bbox_iou(raw[i], truths[i]))
+    return res
