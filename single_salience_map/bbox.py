@@ -59,7 +59,6 @@ def bbox_iou(boxes, truth):
     res = []
     rec2 = [truth[1], truth[0], truth[3], truth[2]]
     S_rec2 = (rec2[3] - rec2[1]) * (rec2[2] - rec2[0])
-
     for box in boxes:
         rec1 = [box[1], box[0], box[1] + box[3], box[0] + box[2]]
         # computing area of each rectangles
@@ -83,7 +82,7 @@ def bbox_iou(boxes, truth):
     best_box = boxes[res.index(iou)]  # filter the best box
     # print(best_box, iou)
 
-    return best_box, iou
+    return [best_box, iou]
 
 
 def bbox_judge(raw, truths):
@@ -91,6 +90,9 @@ def bbox_judge(raw, truths):
     # print(truths)
     res = []
     for i in range(len(truths)):
-        # print(raw[i])
-        res.append(bbox_iou(raw[i], truths[i]))
+        a = bbox_iou(raw[i][0], truths[i])
+        b = bbox_iou(raw[i][1], truths[i])
+        c = bbox_iou(raw[i][2], truths[i])
+        d = bbox_iou(raw[i][3], truths[i])
+        res.append([a, b, c, d])
     return res

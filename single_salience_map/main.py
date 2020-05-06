@@ -34,9 +34,11 @@ def process_images(payload):
 
         l = bboxes.get(image_path, [])
         sm = pySaliencyMap.pySaliencyMap(image.shape[1], image.shape[0])  # img_width, img_height
-        saliency_map = sm.SMGetSM(image, [0.3, 0.3, 0.2, 0.2])  # computation
+        # saliency_map = sm.SMGetSM(image, [0.3, 0.3, 0.2, 0.2])  # computation
 
         # TODO: show graph, IMPORTANT TEST SWITCH
+        # Adaboost学习器中的输入样本应为四个集合，每个集合代表一种特征，有1000个元素，每个元素代表框的中心点。
+        # 以下为feed至四个弱分类器中样本值
         # weights = [1, 0, 0, 0]
         # saliency_map = sm.SMGetSM(image, weights)
         # plt.subplot(2, 2, 1), plt.imshow(saliency_map, 'gray')
@@ -51,12 +53,17 @@ def process_images(payload):
         # plt.subplot(2, 2, 4), plt.imshow(saliency_map, 'gray')
         # plt.show()
 
-        res = bbox.bbox_rect(100, np.uint8(255 * saliency_map))  # get bboxes
-        # print(res)
-        l.append(res)
+        saliency_map = sm.SMGetSM(image, [1, 0, 0, 0])
+        l.append(bbox.bbox_rect(100, np.uint8(255 * saliency_map)))
+        saliency_map = sm.SMGetSM(image, [0, 1, 0, 0])
+        l.append(bbox.bbox_rect(100, np.uint8(255 * saliency_map)))
+        saliency_map = sm.SMGetSM(image, [0, 0, 1, 0])
+        l.append(bbox.bbox_rect(100, np.uint8(255 * saliency_map)))
+        saliency_map = sm.SMGetSM(image, [0, 0, 0, 1])
+        l.append(bbox.bbox_rect(100, np.uint8(255 * saliency_map)))
+
         bboxes[image_path] = l
         # print(int(time.time()))
-
     f = open(payload["output_path"], "wb")
     f.write(pickle.dumps(bboxes))
     f.close()
@@ -68,6 +75,13 @@ def chunk(list, n):
         # yield the current n-sized chunk to the calling function
         yield list[i: i + n]
 
+
+def calc_center_dist(raw, truth):
+    p1_x = raw[0] + raw[2] / 2
+    p1_y = raw[1] + raw[3] / 2
+    p2_x = (truth[0] + truth[2]) / 2
+    p2_y = (truth[1] + truth[3]) / 2
+    return np.sqrt(pow(p1_x - p2_x, 2) + pow(p1_y - p2_y, 2))
 
 def gen_paths(num):
     return ["%s%06d%s" % (defs.IMG_DIR, x, ".jpg") for x in range(1, num + 1)]
@@ -105,6 +119,7 @@ def gen_bboxes():
     for p in paths.list_files("temp", validExts=".pickle", ):
         # load the contents of the dictionary
         data = pickle.loads(open(p, "rb").read())
+        # print(data)  # {xxx.jpg:[[(), (), ...], [(), (), ...]], yyy.jpg:[[(), (), ...], [(), (), ...]]}
         # loop over the hashes and image paths in the dictionary
         for (tempPaths, tempH) in data.items():
             # grab all image paths with the current hash, add in the
@@ -112,7 +127,8 @@ def gen_bboxes():
             # update our hashes dictionary
             imagePaths = bboxes.get(tempPaths, [])
             imagePaths.extend(tempPaths)
-            bboxes[tempPaths] = tempH[0]
+            # print(tempH)
+            bboxes[tempPaths] = [tempH[0], tempH[1], tempH[2], tempH[3]]
     # serialize the hashes dictionary to disk
     print("[INFO] serializing hashes...")
     # print(bboxes)
@@ -121,6 +137,7 @@ def gen_bboxes():
     # print(bboxes)
     f.close()
 
+    # print(bboxes)
     return bboxes
 
 
@@ -131,15 +148,24 @@ if __name__ == '__main__':
 
     # begin regressor loop
     bboxes = gen_bboxes()
+    # print(bboxes)
     truths = load_truth.load(bboxes)
     print(truths)
-    res = bbox.bbox_judge(list(bboxes.values()), truths)  # bbox.values() is an object
+    values = list(bboxes.values())  # values为多张图片的bbox值，每个图片对应四个特征
+    res = bbox.bbox_judge(values, truths)  # bbox.values() is an object
     print(res)
 
-    # print([x[0] for x in res])
+    X = np.zeros([2, 4])
+    for idx, img in enumerate(res):
+        X[idx][0] = calc_center_dist(res[idx][0][0], truths[idx])
+        X[idx][1] = calc_center_dist(res[idx][1][0], truths[idx])
+        X[idx][2] = calc_center_dist(res[idx][2][0], truths[idx])
+        X[idx][3] = calc_center_dist(res[idx][3][0], truths[idx])
 
-    X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
-    regr = AdaBoostRegressor(random_state=0, n_estimators=100)
+    print(X)
+    y = np.zeros([2, 1])
+    # X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
+    # regr = AdaBoostRegressor(random_state=0, n_estimators=100)
 
     # cv2.waitKey(0)
     # end regressor loop
