@@ -26,6 +26,7 @@ class pySaliencyMap:
         self.GaborKernel90 = np.array(pySaliencyMapDefs.GaborKernel_90)
         self.GaborKernel135 = np.array(pySaliencyMapDefs.GaborKernel_135)
 
+
     # extracting color channels
     def SMExtractRGBI(self, inputImage):
         # convert scale of array elements
@@ -66,6 +67,7 @@ class pySaliencyMap:
         GaussianMaps = self.FMCreateGaussianPyr(src)
         dst = self.FMCenterSurroundDiff(GaussianMaps)
         return dst
+
 
     ## intensity feature maps
     def IFMGetFM(self, I):
@@ -150,6 +152,16 @@ class pySaliencyMap:
         # return
         return dst_x, dst_y
 
+    ## region contrast feature maps
+    def RFMGetFM(self, hist):
+        dist = {}
+        for gray in range(256):
+            value = 0.0
+            for k in range(256):
+                value += hist[k][0] * abs(gray - k)
+            dist[gray] = value
+        return dist
+
     # conspicuity maps
     ## standard range normalization
     def SMRangeNormalize(self, src):
@@ -228,6 +240,25 @@ class pySaliencyMap:
     def MCMGetCM(self, MFM_X, MFM_Y):
         return self.CCMGetCM(MFM_X, MFM_Y)
 
+    ## region contrast conspicuity map (newly-added)
+    def RCMGetCM(self, src):
+        image_gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+
+        image_height = image_gray.shape[0]
+        image_width = image_gray.shape[1]
+        image_gray_copy = np.zeros((image_height, image_width))
+        hist_array = cv2.calcHist([image_gray], [0], None, [256], [0.0, 256.0])  # 直方图，统计图像中每个灰度值的数量
+        gray_dist = self.RFMGetFM(hist_array)  # 灰度值与其他值的距离
+        # print(gray_dist)
+        for i in range(image_width):
+            for j in range(image_height):
+                temp = image_gray[j][i]
+                image_gray_copy[j][i] = gray_dist[temp]
+        image_gray_copy = (image_gray_copy - np.min(image_gray_copy)) / (np.max(image_gray_copy) - np.min(image_gray_copy))
+        # cv2.imshow("gray saliency image", image_gray_copy)
+        return image_gray_copy
+
+
     # core
     def SMGetSM(self, src, weights):
         # definitions
@@ -248,7 +279,9 @@ class pySaliencyMap:
         ICM = self.ICMGetCM(IFM)
         CCM = self.CCMGetCM(CFM_RG, CFM_BY)
         OCM = self.OCMGetCM(OFM)
-        MCM = self.MCMGetCM(MFM_X, MFM_Y)
+        RCM = self.RCMGetCM(src)  # RCM经由RFM函数直接得到
+        # MCM = self.MCMGetCM(MFM_X, MFM_Y)
+
         # adding all the conspicuity maps to form a saliency map
         # wi = pySaliencyMapDefs.weight_intensity
         # wc = pySaliencyMapDefs.weight_color
@@ -257,8 +290,8 @@ class pySaliencyMap:
         wi = weights[0]
         wc = weights[1]
         wo = weights[2]
-        wm = weights[3]
-        SMMat = wi * ICM + wc * CCM + wo * OCM + wm * MCM
+        wr = weights[3]
+        SMMat = wi * ICM + wc * CCM + wo * OCM + wr * RCM
         # normalize
         normalizedSM = self.SMRangeNormalize(SMMat)
         normalizedSM2 = normalizedSM.astype(np.float32)

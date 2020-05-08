@@ -155,17 +155,22 @@ if __name__ == '__main__':
     res = bbox.bbox_judge(values, truths)  # bbox.values() is an object
     print(res)
 
-    X = np.zeros([2, 4])
+    X = np.zeros([IMG_NUM, 4])
     for idx, img in enumerate(res):
         X[idx][0] = calc_center_dist(res[idx][0][0], truths[idx])
         X[idx][1] = calc_center_dist(res[idx][1][0], truths[idx])
         X[idx][2] = calc_center_dist(res[idx][2][0], truths[idx])
         X[idx][3] = calc_center_dist(res[idx][3][0], truths[idx])
 
-    print(X)
-    y = np.zeros([2, 1])
-    # X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
-    # regr = AdaBoostRegressor(random_state=0, n_estimators=100)
+    y = np.zeros([1, IMG_NUM])
+    X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
+    regr = AdaBoostRegressor(random_state=0, n_estimators=100)
+    regr.fit(X, y)
+
+    # 分别计算四个特征的平均IOU
+    ious = []
+    print(regr.feature_importances_)
+    print()
 
     # cv2.waitKey(0)
     # end regressor loop
