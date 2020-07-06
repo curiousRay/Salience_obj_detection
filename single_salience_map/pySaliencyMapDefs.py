@@ -10,6 +10,7 @@
 #-------------------------------------------------------------------------------
 
 # data sources
+# using: boat1 car18 uav1
 ANNO_FILE = "../dataset/UAV123_10fps/anno/UAV123_10fps/bike1.txt"
 IMG_DIR = "../dataset/UAV123_10fps/data_seq/UAV123_10fps/bike1/"
 

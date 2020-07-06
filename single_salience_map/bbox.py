@@ -33,14 +33,15 @@ def bbox_rect(val, img):
     drawing = img
     # Draw polygonal contour + bonding rects + circles
     for i in range(len(contours)):
-        color = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
+        # color = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
+        color = (255, 255, 255)
         cv2.drawContours(drawing, contours_poly, i, color)
         cv2.rectangle(drawing, (int(boundRect[i][0]), int(boundRect[i][1])), \
                       (int(boundRect[i][0] + boundRect[i][2]), int(boundRect[i][1] + boundRect[i][3])), color, 2)
         # cv2.circle(drawing, (int(centers[i][0]), int(centers[i][1])), int(radius[i]), color, 2)
 
     # TODO: Show in a window, IMPORTANT TEST SWITCH
-    # cv2.imshow('Contours', drawing)
+    cv2.imshow('Contours', drawing)
 
     cv2.waitKey()  # forbid unexpected window quit
     # print(boundRect)
@@ -89,10 +90,11 @@ def bbox_judge(raw, truths):
     # print(raw)
     # print(truths)
     res = []
+    
     for i in range(len(truths)):
         a = bbox_iou(raw[i][0], truths[i])
-        b = bbox_iou(raw[i][1], truths[i])
-        c = bbox_iou(raw[i][2], truths[i])
-        d = bbox_iou(raw[i][3], truths[i])
-        res.append([a, b, c, d])
+        # b = bbox_iou(raw[i][1], truths[i])
+        # c = bbox_iou(raw[i][2], truths[i])
+        # d = bbox_iou(raw[i][3], truths[i])
+        res.append([a])
     return res

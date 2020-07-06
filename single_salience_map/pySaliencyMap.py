@@ -247,7 +247,7 @@ class pySaliencyMap:
         image_height = image_gray.shape[0]
         image_width = image_gray.shape[1]
         image_gray_copy = np.zeros((image_height, image_width))
-        hist_array = cv2.calcHist([image_gray], [0], None, [256], [0.0, 256.0])  # 直方图，统计图像中每个灰度值的数量
+        hist_array = cv2.calcHist([image_gray], [0], None, [256], [0.0, 256.0])  # 统计图像中每个灰度值的数量
         gray_dist = self.RFMGetFM(hist_array)  # 灰度值与其他值的距离
         # print(gray_dist)
         for i in range(image_width):
